@@ -1,0 +1,92 @@
+body {
+    background-color: #f4f8ff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    color: #222;
+}
+
+.container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    color: #0066ff;
+    margin-bottom: 10px;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #222;
+}
+
+.logo {
+    text-align: center;
+    font-size: 26px;
+    margin-top: 30px;
+    color: #0066ff;
+    font-weight: bold;
+}
+
+input[type="text"], input[type="password"], input[type="submit"], button {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 15px;
+}
+
+input[type="text"]:focus, input[type="password"]:focus {
+    outline: none;
+    border-color: #0066ff;
+    box-shadow: 0 0 5px rgba(0, 102, 255, 0.3);
+}
+
+input[type="submit"], button {
+    background-color: #0066ff;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    transition: 0.3s;
+}
+
+input[type="submit"]:hover, button:hover {
+    background-color: #004fcc;
+}
+
+.message {
+    text-align: center;
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.success {
+    background-color: #e0f9e0;
+    color: #1a7f1a;
+}
+
+.error {
+    background-color: #ffe0e0;
+    color: #a30000;
+}
+
+.resultado {
+    margin-top: 20px;
+    border-top: 1px solid #ccc;
+    padding-top: 20px;
+}
+
+label {
+    font-weight: bold;
+}
