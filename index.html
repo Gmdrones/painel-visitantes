@@ -1,0 +1,34 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel de Visitantes</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Painel de Visitantes</h1>
+    <form method="POST" action="/adicionar">
+        <input name="nome" placeholder="Nome" required>
+        <input name="cpf" placeholder="CPF" required>
+        <input name="identidade" placeholder="Identidade" required>
+        <input name="placa" placeholder="Placa" required>
+        <input name="bloco" placeholder="Bloco" required>
+        <input name="apartamento" placeholder="Apartamento" required>
+        <input name="morador" placeholder="Morador" required>
+        <button type="submit">Cadastrar</button>
+    </form>
+    <table>
+        <tr>
+            <th>Nome</th><th>CPF</th><th>Identidade</th><th>Placa</th>
+            <th>Bloco</th><th>Apto</th><th>Morador</th><th>Data</th>
+        </tr>
+        {% for v in visitantes %}
+        <tr>
+            <td>{{ v[1] }}</td><td>{{ v[2] }}</td><td>{{ v[3] }}</td><td>{{ v[4] }}</td>
+            <td>{{ v[5] }}</td><td>{{ v[6] }}</td><td>{{ v[7] }}</td><td>{{ v[8] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
