@@ -1,64 +1,58 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Portaria IA - Login</title>
+    <title>Login - Portaria IA</title>
     <style>
         body {
-            background-color: #f0f8ff;
+            background: #f4f9ff;
             font-family: Arial, sans-serif;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            height: 100vh;
+            margin-top: 80px;
         }
-        .login-container {
-            background-color: white;
+        h1 {
+            color: #007bff;
+        }
+        form {
+            background: white;
             padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-            width: 320px;
-            text-align: center;
-        }
-        h2 {
-            color: #003366;
-            margin-bottom: 20px;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            min-width: 300px;
         }
         input {
-            width: 90%;
-            padding: 10px;
-            margin: 8px 0;
-            border: 1px solid #ccc;
+            width: 100%;
+            padding: 12px;
+            margin-top: 12px;
             border-radius: 8px;
+            border: 1px solid #ccc;
         }
         button {
-            background-color: #003366;
+            width: 100%;
+            padding: 12px;
+            margin-top: 16px;
+            background-color: #007bff;
             color: white;
             border: none;
-            padding: 10px 20px;
-            margin-top: 10px;
             border-radius: 8px;
-            cursor: pointer;
+            font-size: 16px;
         }
-        .error {
+        .msg {
             color: red;
             margin-top: 10px;
-        }
-        img {
-            width: 100px;
-            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
-    <form method="POST" action="/">
-        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
-        <h2>Portaria IA - Login</h2>
-        <input type="text" name="username" placeholder="Usuário" required>
-        <input type="password" name="password" placeholder="Senha" required>
+    <h1>🔐 Portaria IA - Login</h1>
+    <form method="POST">
+        <input type="text" name="usuario" placeholder="Usuário" required>
+        <input type="password" name="senha" placeholder="Senha" required>
         <button type="submit">Entrar</button>
-        {% if erro %}
-            <div class="error">{{ erro }}</div>
+        {% if msg %}
+            <div class="msg">{{ msg }}</div>
         {% endif %}
     </form>
 </body>
