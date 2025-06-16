@@ -1,78 +1,77 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel de Visitantes</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portaria IA</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #f4f8ff;
+    }
+    .header-logo {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #0d6efd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+    .header-logo span {
+      margin-left: 0.5rem;
+    }
+    .card {
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.05);
+    }
+    .btn-primary {
+      background-color: #0d6efd;
+      border: none;
+    }
+    .mensagem {
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+  </style>
 </head>
-<body class="bg-light">
+<body>
 
-  <div class="container mt-5">
-    <h1 class="text-center mb-4">📋 Cadastro de Visitantes</h1>
+  <div class="container py-5">
+    <div class="text-center header-logo">
+      🚪 <span>Portaria IA</span>
+    </div>
 
-    <form action="/cadastrar" method="POST" class="card p-4 shadow-sm">
-      <div class="mb-3">
-        <label for="nome" class="form-label">Nome</label>
-        <input type="text" name="nome" class="form-control" required>
-      </div>
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+        <div class="card p-4">
+          <h3 class="text-center mb-4">📝 Cadastro de Visitantes</h3>
 
-      <div class="mb-3">
-        <label for="cpf" class="form-label">CPF</label>
-        <input type="text" name="cpf" class="form-control">
-      </div>
+          {% if mensagem %}
+            <div class="alert alert-info text-center mensagem">{{ mensagem }}</div>
+          {% endif %}
 
-      <div class="mb-3">
-        <label for="identidade" class="form-label">Identidade</label>
-        <input type="text" name="identidade" class="form-control">
-      </div>
+          <form method="POST" action="/cadastrar">
+            <div class="mb-3">
+              <input type="text" name="nome" class="form-control" placeholder="Nome" required />
+            </div>
 
-      <div class="mb-3">
-        <label for="placa" class="form-label">Placa do Veículo</label>
-        <input type="text" name="placa" class="form-control">
-      </div>
+            <div class="mb-3">
+              <input type="text" name="cpf" class="form-control" placeholder="CPF (123.456.789-00)" pattern="^\d{3}\.\d{3}\.\d{3}-\d{2}$" title="Formato: 123.456.789-00" />
+            </div>
 
-      <div class="row">
-        <div class="col-md-4 mb-3">
-          <label for="bloco" class="form-label">Bloco</label>
-          <input type="text" name="bloco" class="form-control">
-        </div>
-        <div class="col-md-4 mb-3">
-          <label for="apartamento" class="form-label">Apartamento</label>
-          <input type="text" name="apartamento" class="form-control">
-        </div>
-        <div class="col-md-4 mb-3">
-          <label for="morador" class="form-label">Morador Responsável</label>
-          <input type="text" name="morador" class="form-control">
-        </div>
-      </div>
+            <div class="mb-3">
+              <input type="text" name="identidade" class="form-control" placeholder="Identidade" />
+            </div>
 
-      <button type="submit" class="btn btn-primary w-100">Cadastrar</button>
-    </form>
+            <div class="mb-3">
+              <input type="text" name="placa" class="form-control" placeholder="Placa do Veículo (ABC-1234 ou ABC-1D34)" pattern="^[A-Z]{3}-\d{4}$|^[A-Z]{3}-\d[A-Z]\d{2}$" title="Formato: ABC-1234 ou ABC-1D34" />
+            </div>
 
-    <hr class="my-5">
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <input type="text" name="bloco" class="form-control" placeholder="Bloco" />
+              </div>
+              <div class="col-md-4 mb-3">
+                <input type="text" n
 
-    <h2 class="text-center mb-3">🔍 Buscar Visitante</h2>
-    <form action="/buscar" method="POST" class="input-group mb-4">
-      <input type="text" name="termo" class="form-control" placeholder="Digite nome, CPF ou identidade">
-      <button class="btn btn-outline-secondary" type="submit">Buscar</button>
-    </form>
-
-    {% if resultados %}
-      <div class="card p-3">
-        <h5>Últimos resultados encontrados:</h5>
-        <ul class="list-group list-group-flush">
-          {% for r in resultados %}
-            <li class="list-group-item">
-              <strong>Nome:</strong> {{ r[1] }} |
-              <strong>CPF:</strong> {{ r[2] }} |
-              <strong>Data:</strong> {{ r[8] }}
-            </li>
-          {% endfor %}
-        </ul>
-      </div>
-    {% endif %}
-  </div>
-
-</body>
-</html>
