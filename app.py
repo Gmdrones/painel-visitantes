@@ -1,11 +1,13 @@
+# painel_visitantes/app.py
 from flask import Flask, render_template, request, redirect, session, send_file
 import sqlite3
 from datetime import datetime
+from io import BytesIO
+import pandas as pd
 from waitress import serve
 
 app = Flask(__name__)
 app.secret_key = 'chave_super_secreta'
-
 DB_FILE = 'visitantes.db'
 
 def init_db():
@@ -19,6 +21,8 @@ def init_db():
             identidade TEXT UNIQUE,
             placa TEXT,
             bloco TEXT,
+            apartamento TEXT,
+            morador TEXT,
             data_hora DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     ''')
@@ -27,7 +31,6 @@ def init_db():
 
 init_db()
 
-# --- Login ---
 @app.route("/", methods=["GET", "POST"])
 def login():
     msg = ""
@@ -42,16 +45,14 @@ def login():
             return redirect('/painel')
         else:
             msg = 'Usuário ou senha incorretos.'
-    return render_template("login.html", msg=msg)
+    return render_template('login.html', msg=msg)
 
-# --- Painel ---
 @app.route('/painel')
 def painel():
     if 'usuario' not in session:
         return redirect('/')
-    return render_template("index.html", usuario=session['usuario'])
+    return render_template('index.html', usuario=session['usuario'])
 
-# --- Cadastro ---
 @app.route('/cadastrar', methods=['POST'])
 def cadastrar():
     if 'usuario' not in session:
@@ -63,21 +64,23 @@ def cadastrar():
             request.form['cpf'],
             request.form['identidade'],
             request.form['placa'],
-            request.form['bloco']
+            request.form['bloco'],
+            request.form['apartamento'],
+            request.form['morador']
         )
 
         cpf = dados[1]
         placa = dados[3]
-        if cpf and (not cpf.count('.') == 2 or '-' not in cpf):
-            raise ValueError("CPF inválido. Use o formato 123.456.789-00.")
+        if cpf and (cpf.count('.') != 2 or '-' not in cpf):
+            raise ValueError("CPF inválido. Use o formato 123.456.789-00 ou deixe em branco.")
         if placa and not (len(placa) == 8 and '-' in placa):
-            raise ValueError("Placa inválida. Use o formato ABC-1234 ou ABC-1D34.")
+            raise ValueError("Placa inválida. Use ABC-1234 ou ABC-1D34 ou deixe em branco.")
 
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
         cursor.execute('''
-            INSERT INTO visitantes (nome, cpf, identidade, placa, bloco)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO visitantes (nome, cpf, identidade, placa, bloco, apartamento, morador)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         ''', dados)
         conn.commit()
         conn.close()
@@ -87,12 +90,11 @@ def cadastrar():
         erro = "CPF ou Identidade já cadastrados."
     except ValueError as e:
         erro = str(e)
-    except:
+    except Exception:
         erro = "Erro no cadastro."
-    
+
     return render_template('index.html', erro=erro, usuario=session['usuario'])
 
-# --- Busca ---
 @app.route('/buscar', methods=['POST'])
 def buscar():
     if 'usuario' not in session:
@@ -104,24 +106,27 @@ def buscar():
         SELECT * FROM visitantes
         WHERE nome LIKE ? OR cpf LIKE ? OR identidade LIKE ?
         ORDER BY data_hora DESC LIMIT 5
-    ''', (f'%{termo}%', f'%{termo}%', f'%{termo}%'))
+    ''', (f"%{termo}%", f"%{termo}%", f"%{termo}%"))
     resultados = cursor.fetchall()
     conn.close()
     return render_template('index.html', resultados=resultados, usuario=session['usuario'])
 
-# --- Download do banco ---
 @app.route('/download')
 def download():
     if 'usuario' in session and session['usuario'] == 'admin':
-        return send_file(DB_FILE, as_attachment=True)
+        conn = sqlite3.connect(DB_FILE)
+        df = pd.read_sql_query("SELECT * FROM visitantes", conn)
+        output = BytesIO()
+        df.to_excel(output, index=False)
+        output.seek(0)
+        conn.close()
+        return send_file(output, download_name="visitantes.xlsx", as_attachment=True)
     return redirect('/')
 
-# --- Logout ---
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect('/')
 
-# --- Executar ---
 if __name__ == '__main__':
     serve(app, host='0.0.0.0', port=10000)
