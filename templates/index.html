@@ -1,42 +1,78 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <title>Painel de Visitantes</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel de Visitantes</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-    <h2>✅ Cadastrar Novo Visitante</h2>
-    <form action="/cadastrar" method="POST">
-        <input name="nome" placeholder="Nome" required><br>
-        <input name="cpf" placeholder="CPF"><br>
-        <input name="identidade" placeholder="Identidade"><br>
-        <input name="placa" placeholder="Placa do Veículo"><br>
-        <input name="bloco" placeholder="Bloco"><br>
-        <input name="apartamento" placeholder="Apartamento"><br>
-        <input name="morador" placeholder="Nome do Morador"><br>
-        <button type="submit">Cadastrar</button>
+<body class="bg-light">
+
+  <div class="container mt-5">
+    <h1 class="text-center mb-4">📋 Cadastro de Visitantes</h1>
+
+    <form action="/cadastrar" method="POST" class="card p-4 shadow-sm">
+      <div class="mb-3">
+        <label for="nome" class="form-label">Nome</label>
+        <input type="text" name="nome" class="form-control" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="cpf" class="form-label">CPF</label>
+        <input type="text" name="cpf" class="form-control">
+      </div>
+
+      <div class="mb-3">
+        <label for="identidade" class="form-label">Identidade</label>
+        <input type="text" name="identidade" class="form-control">
+      </div>
+
+      <div class="mb-3">
+        <label for="placa" class="form-label">Placa do Veículo</label>
+        <input type="text" name="placa" class="form-control">
+      </div>
+
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label for="bloco" class="form-label">Bloco</label>
+          <input type="text" name="bloco" class="form-control">
+        </div>
+        <div class="col-md-4 mb-3">
+          <label for="apartamento" class="form-label">Apartamento</label>
+          <input type="text" name="apartamento" class="form-control">
+        </div>
+        <div class="col-md-4 mb-3">
+          <label for="morador" class="form-label">Morador Responsável</label>
+          <input type="text" name="morador" class="form-control">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100">Cadastrar</button>
     </form>
 
-    <h2>🔍 Buscar Visitante</h2>
-    <form action="/buscar" method="POST">
-        <input name="termo" placeholder="Nome, CPF ou Identidade">
-        <button type="submit">Buscar</button>
+    <hr class="my-5">
+
+    <h2 class="text-center mb-3">🔍 Buscar Visitante</h2>
+    <form action="/buscar" method="POST" class="input-group mb-4">
+      <input type="text" name="termo" class="form-control" placeholder="Digite nome, CPF ou identidade">
+      <button class="btn btn-outline-secondary" type="submit">Buscar</button>
     </form>
 
     {% if resultados %}
-        <h3>Resultados da Busca:</h3>
-        {% for r in resultados %}
-            <p>
-                <strong>Nome:</strong> {{ r[1] }}<br>
-                <strong>CPF:</strong> {{ r[2] }}<br>
-                <strong>Identidade:</strong> {{ r[3] }}<br>
-                <strong>Placa:</strong> {{ r[4] }}<br>
-                <strong>Bloco:</strong> {{ r[5] }}<br>
-                <strong>Apto:</strong> {{ r[6] }}<br>
-                <strong>Morador:</strong> {{ r[7] }}<br>
-                <strong>Data:</strong> {{ r[8] }}<br><br>
-            </p>
-        {% endfor %}
+      <div class="card p-3">
+        <h5>Últimos resultados encontrados:</h5>
+        <ul class="list-group list-group-flush">
+          {% for r in resultados %}
+            <li class="list-group-item">
+              <strong>Nome:</strong> {{ r[1] }} |
+              <strong>CPF:</strong> {{ r[2] }} |
+              <strong>Data:</strong> {{ r[8] }}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
     {% endif %}
+  </div>
+
 </body>
 </html>
