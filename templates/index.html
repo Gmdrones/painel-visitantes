@@ -1,112 +1,150 @@
-📁 Abaixo estão os arquivos HTML organizados por função:
-
----
-
-🔹 **1. `login.html`** (Tela de login)
-```html
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Portaria IA - Login</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Portaria IA - Painel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f8ff;
+            padding: 20px;
+        }
+        header {
+            background-color: #003366;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 10px;
+        }
+        h2 {
+            margin-top: 20px;
+            color: #003366;
+        }
+        form {
+            background-color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 10px #ccc;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 4px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        button {
+            margin-top: 15px;
+            background-color: #003366;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        table {
+            width: 100%;
+            background-color: white;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 0 10px #ccc;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #003366;
+            color: white;
+        }
+        .message {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .logout {
+            float: right;
+            margin-top: -45px;
+            margin-right: 10px;
+        }
+    </style>
 </head>
-<body class="bg-light">
-<div class="container d-flex justify-content-center align-items-center vh-100">
-    <div class="card p-4">
-        <h3 class="text-center text-primary">🔐 Portaria IA - Login</h3>
-        {% if erro %}<div class="alert alert-danger mt-2">{{ erro }}</div>{% endif %}
-        <form method="POST" action="/login">
-            <input type="text" name="usuario" class="form-control mt-3" placeholder="Usuário" required>
-            <input type="password" name="senha" class="form-control mt-3" placeholder="Senha" required>
-            <button type="submit" class="btn btn-primary w-100 mt-3">Entrar</button>
+<body>
+    <header>
+        <h1>Portaria IA</h1>
+        <form action="/logout" method="post" class="logout">
+            <button type="submit">Sair</button>
         </form>
-    </div>
-</div>
-</body>
-</html>
-```
-
----
-
-🔹 **2. `index.html`** (Painel do porteiro com cadastro e busca)
-```html
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Portaria IA - Cadastro</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-<div class="container mt-5">
-    <h2 class="text-center text-primary">📋 Portaria IA - Cadastro de Visitantes</h2>
+    </header>
 
     {% if mensagem %}
-        <div class="alert alert-success mt-3">{{ mensagem }}</div>
-    {% elif erro %}
-        <div class="alert alert-danger mt-3">{{ erro }}</div>
+        <div class="message {{ tipo }}">{{ mensagem }}</div>
     {% endif %}
 
-    <form method="POST" action="/cadastrar" class="card p-4 mt-3">
-        <input type="text" name="nome" class="form-control mb-3" placeholder="Nome" required>
-        <input type="text" name="cpf" class="form-control mb-3" placeholder="CPF (123.456.789-00)">
-        <input type="text" name="identidade" class="form-control mb-3" placeholder="Identidade">
-        <input type="text" name="placa" class="form-control mb-3" placeholder="Placa do Veículo (ABC-1234 ou ABC-1D34)">
-        <input type="text" name="bloco" class="form-control mb-3" placeholder="Bloco">
-        <button type="submit" class="btn btn-primary">Cadastrar</button>
+    <h2>Cadastro de Visitantes</h2>
+    <form method="POST" action="/cadastrar">
+        <label>Nome:</label>
+        <input type="text" name="nome" required>
+
+        <label>CPF (opcional):</label>
+        <input type="text" name="cpf" pattern="\d{3}\.\d{3}\.\d{3}-\d{2}" placeholder="123.456.789-00">
+
+        <label>Identidade (opcional):</label>
+        <input type="text" name="identidade">
+
+        <label>Placa do Veículo (opcional):</label>
+        <input type="text" name="placa" pattern="^[A-Z]{3}-\d{4}$|^[A-Z]{3}-\d[A-Z]\d{2}$" placeholder="ABC-1234 ou ABC-1D34">
+
+        <label>Bloco:</label>
+        <input type="text" name="bloco" required>
+
+        <button type="submit">Cadastrar</button>
     </form>
 
-    <hr>
-
-    <h4 class="text-center">🔍 Buscar Visitante</h4>
-    <form method="POST" action="/buscar" class="d-flex mt-2">
-        <input type="text" name="termo" class="form-control me-2" placeholder="Digite nome, CPF ou identidade">
-        <button type="submit" class="btn btn-outline-secondary">Buscar</button>
+    <h2>Buscar Visitante</h2>
+    <form method="POST" action="/buscar">
+        <input type="text" name="termo" placeholder="Nome, CPF ou Identidade" required>
+        <button type="submit">Buscar</button>
     </form>
 
     {% if resultados %}
-        <ul class="list-group mt-4">
+        <h2>Resultados da Busca</h2>
+        <table>
+            <tr>
+                <th>Nome</th>
+                <th>CPF</th>
+                <th>Identidade</th>
+                <th>Placa</th>
+                <th>Bloco</th>
+                <th>Data/Hora</th>
+            </tr>
             {% for r in resultados %}
-                <li class="list-group-item">{{ r[1] }} - CPF: {{ r[2] }} - ID: {{ r[3] }} - Placa: {{ r[4] }} - Bloco: {{ r[5] }}</li>
+            <tr>
+                <td>{{ r[1] }}</td>
+                <td>{{ r[2] }}</td>
+                <td>{{ r[3] }}</td>
+                <td>{{ r[4] }}</td>
+                <td>{{ r[5] }}</td>
+                <td>{{ r[6] }}</td>
+            </tr>
             {% endfor %}
-        </ul>
+        </table>
     {% endif %}
-
-    <a href="/logout" class="btn btn-link mt-3">Sair</a>
-</div>
 </body>
 </html>
-```
-
----
-
-🔹 **3. `admin.html`** (Painel administrativo com download do banco)
-```html
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Admin - Portaria IA</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-white">
-<div class="container mt-5">
-    <h2 class="text-center text-danger">👨‍💼 Painel Administrativo</h2>
-    <p class="text-center">Faça download do banco de dados completo.</p>
-
-    <div class="d-flex justify-content-center">
-        <a href="/download" class="btn btn-danger">📥 Baixar Banco de Dados</a>
-    </div>
-
-    <div class="text-center mt-4">
-        <a href="/logout" class="btn btn-link">Sair</a>
-    </div>
-</div>
-</body>
-</html>
-```
-
----
-
-
