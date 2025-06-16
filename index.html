@@ -1,34 +1,42 @@
-
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <title>Painel de Visitantes</title>
-    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <h1>Painel de Visitantes</h1>
-    <form method="POST" action="/adicionar">
-        <input name="nome" placeholder="Nome" required>
-        <input name="cpf" placeholder="CPF" required>
-        <input name="identidade" placeholder="Identidade" required>
-        <input name="placa" placeholder="Placa" required>
-        <input name="bloco" placeholder="Bloco" required>
-        <input name="apartamento" placeholder="Apartamento" required>
-        <input name="morador" placeholder="Morador" required>
+    <h2>✅ Cadastrar Novo Visitante</h2>
+    <form action="/cadastrar" method="POST">
+        <input name="nome" placeholder="Nome" required><br>
+        <input name="cpf" placeholder="CPF"><br>
+        <input name="identidade" placeholder="Identidade"><br>
+        <input name="placa" placeholder="Placa do Veículo"><br>
+        <input name="bloco" placeholder="Bloco"><br>
+        <input name="apartamento" placeholder="Apartamento"><br>
+        <input name="morador" placeholder="Nome do Morador"><br>
         <button type="submit">Cadastrar</button>
     </form>
-    <table>
-        <tr>
-            <th>Nome</th><th>CPF</th><th>Identidade</th><th>Placa</th>
-            <th>Bloco</th><th>Apto</th><th>Morador</th><th>Data</th>
-        </tr>
-        {% for v in visitantes %}
-        <tr>
-            <td>{{ v[1] }}</td><td>{{ v[2] }}</td><td>{{ v[3] }}</td><td>{{ v[4] }}</td>
-            <td>{{ v[5] }}</td><td>{{ v[6] }}</td><td>{{ v[7] }}</td><td>{{ v[8] }}</td>
-        </tr>
+
+    <h2>🔍 Buscar Visitante</h2>
+    <form action="/buscar" method="POST">
+        <input name="termo" placeholder="Nome, CPF ou Identidade">
+        <button type="submit">Buscar</button>
+    </form>
+
+    {% if resultados %}
+        <h3>Resultados da Busca:</h3>
+        {% for r in resultados %}
+            <p>
+                <strong>Nome:</strong> {{ r[1] }}<br>
+                <strong>CPF:</strong> {{ r[2] }}<br>
+                <strong>Identidade:</strong> {{ r[3] }}<br>
+                <strong>Placa:</strong> {{ r[4] }}<br>
+                <strong>Bloco:</strong> {{ r[5] }}<br>
+                <strong>Apto:</strong> {{ r[6] }}<br>
+                <strong>Morador:</strong> {{ r[7] }}<br>
+                <strong>Data:</strong> {{ r[8] }}<br><br>
+            </p>
         {% endfor %}
-    </table>
+    {% endif %}
 </body>
 </html>
