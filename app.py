@@ -1,14 +1,16 @@
-from flask import Flask, render_template, request, redirect, session, send_file, flash
+from flask import Flask, render_template, request, redirect, session, send_file, url_for
 import sqlite3
-import os
 from datetime import datetime
+import os
+from waitress import serve
 
 app = Flask(__name__)
-app.secret_key = 'sua_chave_secreta'
+app.secret_key = 'chave_super_secreta'
 
-# Banco de dados de visitantes
+# Cria o banco de dados e a tabela
+DB_FILE = 'visitantes.db'
 def init_db():
-    conn = sqlite3.connect('visitantes.db')
+    conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS visitantes (
@@ -26,59 +28,36 @@ def init_db():
 
 init_db()
 
-# Dados de login (exemplo fixo - ideal seria usar hash + banco separado)
-USUARIOS = {
-    'porteiro': {'senha': '1234', 'perfil': 'porteiro'},
-    'admin': {'senha': 'admin123', 'perfil': 'admin'}
-}
-
-@app.route('/')
+# --- Rota de Login ---
+@app.route('/', methods=['GET', 'POST'])
 def login():
-    return render_template('login.html')
-
-@app.route('/login', methods=['POST'])
-def fazer_login():
-    usuario = request.form['usuario']
-    senha = request.form['senha']
-    user = USUARIOS.get(usuario)
-    if user and user['senha'] == senha:
-        session['usuario'] = usuario
-        session['perfil'] = user['perfil']
-        if user['perfil'] == 'admin':
-            return redirect('/admin')
-        else:
+    msg = ""
+    if request.method == 'POST':
+        usuario = request.form['usuario']
+        senha = request.form['senha']
+        if usuario == 'porteiro' and senha == '1234':
+            session['usuario'] = 'porteiro'
             return redirect('/painel')
-    else:
-        flash('Usuário ou senha incorretos.')
-        return redirect('/')
+        elif usuario == 'admin' and senha == 'admin':
+            session['usuario'] = 'admin'
+            return redirect('/painel')
+        else:
+            msg = 'Usuário ou senha incorretos.'
+    return render_template('login.html', msg=msg)
 
-@app.route('/logout')
-def logout():
-    session.clear()
-    return redirect('/')
-
-@app.route('/painel')
+# --- Painel Principal ---
+@app.route('/painel', methods=['GET'])
 def painel():
-    if session.get('perfil') != 'porteiro':
+    if 'usuario' not in session:
         return redirect('/')
-    return render_template('index.html')
+    return render_template('index.html', usuario=session['usuario'])
 
-@app.route('/admin')
-def admin():
-    if session.get('perfil') != 'admin':
-        return redirect('/')
-    return render_template('admin.html')
-
-@app.route('/download')
-def download():
-    if session.get('perfil') != 'admin':
-        return redirect('/')
-    return send_file('visitantes.db', as_attachment=True)
-
+# --- Cadastro ---
 @app.route('/cadastrar', methods=['POST'])
 def cadastrar():
-    if session.get('perfil') != 'porteiro':
+    if 'usuario' not in session:
         return redirect('/')
+
     try:
         dados = (
             request.form['nome'],
@@ -87,7 +66,16 @@ def cadastrar():
             request.form['placa'],
             request.form['bloco']
         )
-        conn = sqlite3.connect('visitantes.db')
+
+        # Validações básicas
+        cpf = dados[1]
+        placa = dados[3]
+        if cpf and not cpf.count('.') == 2 or '-' not in cpf:
+            raise ValueError("CPF inválido. Use o formato 123.456.789-00 ou deixe em branco.")
+        if placa and not (len(placa) == 8 and '-' in placa):
+            raise ValueError("Placa inválida. Use ABC-1234 ou ABC-1D34 ou deixe em branco.")
+
+        conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
         cursor.execute('''
             INSERT INTO visitantes (nome, cpf, identidade, placa, bloco)
@@ -95,41 +83,47 @@ def cadastrar():
         ''', dados)
         conn.commit()
         conn.close()
-        flash('Cadastro realizado com sucesso.')
-    except sqlite3.IntegrityError as e:
-        if 'cpf' in str(e):
-            flash('CPF já cadastrado.')
-        elif 'identidade' in str(e):
-            flash('Identidade já cadastrada.')
-        else:
-            flash('Erro no cadastro.')
-    except Exception:
-        flash('Erro no cadastro.')
-    return redirect('/painel')
+        return render_template('index.html', sucesso="Cadastro realizado com sucesso!", usuario=session['usuario'])
 
+    except sqlite3.IntegrityError as e:
+        erro = "CPF ou Identidade já cadastrados."
+    except ValueError as e:
+        erro = str(e)
+    except Exception:
+        erro = "Erro no cadastro."
+
+    return render_template('index.html', erro=erro, usuario=session['usuario'])
+
+# --- Busca ---
 @app.route('/buscar', methods=['POST'])
 def buscar():
-    if session.get('perfil') != 'porteiro':
+    if 'usuario' not in session:
         return redirect('/')
     termo = request.form['termo']
-    conn = sqlite3.connect('visitantes.db')
+    conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
     cursor.execute('''
         SELECT * FROM visitantes
         WHERE nome LIKE ? OR cpf LIKE ? OR identidade LIKE ?
         ORDER BY data_hora DESC LIMIT 5
-    ''', (f'%{termo}%', f'%{termo}%', f'%{termo}%'))
+    ''', (f"%{termo}%", f"%{termo}%", f"%{termo}%"))
     resultados = cursor.fetchall()
     conn.close()
-    return render_template('index.html', resultados=resultados)
+    return render_template('index.html', resultados=resultados, usuario=session['usuario'])
 
-# Render utiliza o waitress
+# --- Download do banco ---
+@app.route('/download')
+def download():
+    if 'usuario' in session and session['usuario'] == 'admin':
+        return send_file(DB_FILE, as_attachment=True)
+    return redirect('/')
+
+# --- Logout ---
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect('/')
+
+# --- Executar no Render ---
 if __name__ == '__main__':
-    from waitress import serve
     serve(app, host='0.0.0.0', port=10000)
-
-
-# === DEPLOY ===
-if __name__ == '__main__':
-    from waitress import serve
-    serve(app, host="0.0.0.0", port=10000)
