@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, send_file, url_for
+from flask import Flask, render_template, request, redirect, session, send_file
 import sqlite3
 from datetime import datetime
 import os
@@ -7,8 +7,10 @@ from waitress import serve
 app = Flask(__name__)
 app.secret_key = 'chave_super_secreta'
 
-# Cria o banco de dados e a tabela
+# Caminho do banco
 DB_FILE = 'visitantes.db'
+
+# Inicializa o banco de dados
 def init_db():
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
@@ -28,13 +30,9 @@ def init_db():
 
 init_db()
 
-# --- Rota de Login ---
+# --- Página de Login ---
 @app.route("/", methods=["GET", "POST"])
 def login():
-    if request.method == "POST":
-        # lógica do login
-        ...
-    return render_template("login.html")
     msg = ""
     if request.method == 'POST':
         usuario = request.form['usuario']
@@ -49,33 +47,31 @@ def login():
             msg = 'Usuário ou senha incorretos.'
     return render_template('login.html', msg=msg)
 
-# --- Painel Principal ---
-@app.route('/painel', methods=['GET'])
+# --- Painel após login ---
+@app.route("/painel", methods=["GET"])
 def painel():
     if 'usuario' not in session:
         return redirect('/')
-    return render_template('index.html', usuario=session['usuario'])
+    return render_template("index.html", usuario=session['usuario'])
 
-# --- Cadastro ---
-@app.route('/cadastrar', methods=['POST'])
+# --- Cadastro de visitante ---
+@app.route("/cadastrar", methods=["POST"])
 def cadastrar():
     if 'usuario' not in session:
         return redirect('/')
 
     try:
-        dados = (
-            request.form['nome'],
-            request.form['cpf'],
-            request.form['identidade'],
-            request.form['placa'],
-            request.form['bloco']
-        )
+        nome = request.form['nome']
+        cpf = request.form['cpf']
+        identidade = request.form['identidade']
+        placa = request.form['placa']
+        bloco = request.form['bloco']
 
-        # Validações básicas
-        cpf = dados[1]
-        placa = dados[3]
-        if cpf and not cpf.count('.') == 2 or '-' not in cpf:
+        # Validação CPF
+        if cpf and (len(cpf) != 14 or cpf.count('.') != 2 or '-' not in cpf):
             raise ValueError("CPF inválido. Use o formato 123.456.789-00 ou deixe em branco.")
+
+        # Validação Placa
         if placa and not (len(placa) == 8 and '-' in placa):
             raise ValueError("Placa inválida. Use ABC-1234 ou ABC-1D34 ou deixe em branco.")
 
@@ -84,22 +80,23 @@ def cadastrar():
         cursor.execute('''
             INSERT INTO visitantes (nome, cpf, identidade, placa, bloco)
             VALUES (?, ?, ?, ?, ?)
-        ''', dados)
+        ''', (nome, cpf, identidade, placa, bloco))
         conn.commit()
         conn.close()
-        return render_template('index.html', sucesso="Cadastro realizado com sucesso!", usuario=session['usuario'])
+
+        return render_template("index.html", sucesso="Cadastro realizado com sucesso!", usuario=session['usuario'])
 
     except sqlite3.IntegrityError as e:
-        erro = "CPF ou Identidade já cadastrados."
+        erro = "CPF já cadastrado." if "cpf" in str(e) else "Identidade já cadastrada."
     except ValueError as e:
         erro = str(e)
-    except Exception:
+    except:
         erro = "Erro no cadastro."
 
-    return render_template('index.html', erro=erro, usuario=session['usuario'])
+    return render_template("index.html", erro=erro, usuario=session['usuario'])
 
-# --- Busca ---
-@app.route('/buscar', methods=['POST'])
+# --- Buscar visitante ---
+@app.route("/buscar", methods=["POST"])
 def buscar():
     if 'usuario' not in session:
         return redirect('/')
@@ -109,25 +106,18 @@ def buscar():
     cursor.execute('''
         SELECT * FROM visitantes
         WHERE nome LIKE ? OR cpf LIKE ? OR identidade LIKE ?
-        ORDER BY data_hora DESC LIMIT 5
+        ORDER BY data_hora DESC LIMIT 10
     ''', (f"%{termo}%", f"%{termo}%", f"%{termo}%"))
     resultados = cursor.fetchall()
     conn.close()
-    return render_template('index.html', resultados=resultados, usuario=session['usuario'])
+    return render_template("index.html", resultados=resultados, usuario=session['usuario'])
 
-# --- Download do banco ---
-@app.route('/download')
+# --- Download do banco (somente admin) ---
+@app.route("/download")
 def download():
     if 'usuario' in session and session['usuario'] == 'admin':
         return send_file(DB_FILE, as_attachment=True)
     return redirect('/')
 
 # --- Logout ---
-@app.route('/logout')
-def logout():
-    session.clear()
-    return redirect('/')
-
-# --- Executar no Render ---
-if __name__ == '__main__':
-    serve(app, host='0.0.0.0', port=10000)
+@app.ro
