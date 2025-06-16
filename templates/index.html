@@ -1,130 +1,106 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Portaria IA - Painel</title>
+    <title>Painel - Portaria IA</title>
     <style>
         body {
+            background-color: #eef6ff;
             font-family: Arial, sans-serif;
-            background-color: #f4f8ff;
+            margin: 0;
             padding: 20px;
         }
-        header {
-            background-color: #003366;
-            color: white;
-            padding: 15px;
-            text-align: center;
-            border-radius: 10px;
-        }
-        h2 {
-            margin-top: 20px;
-            color: #003366;
-        }
-        form {
+        .container {
             background-color: white;
-            padding: 20px;
+            padding: 30px;
+            max-width: 600px;
+            margin: auto;
             border-radius: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 0 10px #ccc;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
-        label {
-            display: block;
-            margin-top: 10px;
+        h1 {
+            color: #007bff;
+            text-align: center;
         }
-        input[type="text"] {
+        form input {
             width: 100%;
-            padding: 8px;
-            margin-top: 4px;
-            border: 1px solid #ccc;
+            padding: 12px;
+            margin-top: 10px;
             border-radius: 8px;
+            border: 1px solid #ccc;
         }
         button {
-            margin-top: 15px;
-            background-color: #003366;
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
             color: white;
             border: none;
-            padding: 10px 20px;
             border-radius: 8px;
-            cursor: pointer;
+            font-size: 16px;
+            margin-top: 15px;
+        }
+        .mensagem {
+            margin-top: 10px;
+            text-align: center;
+            color: green;
+        }
+        .erro {
+            color: red;
+            text-align: center;
         }
         table {
             width: 100%;
-            background-color: white;
-            border-collapse: collapse;
             margin-top: 20px;
-            box-shadow: 0 0 10px #ccc;
-            border-radius: 10px;
-            overflow: hidden;
+            border-collapse: collapse;
         }
         th, td {
-            border: 1px solid #ddd;
-            padding: 12px;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
             text-align: left;
         }
-        th {
-            background-color: #003366;
-            color: white;
+        .topo {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
         }
-        .message {
-            padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-        }
-        .success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-        .logout {
-            float: right;
-            margin-top: -45px;
-            margin-right: 10px;
+        .topo a {
+            text-decoration: none;
+            color: #007bff;
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Portaria IA</h1>
-        <form action="/logout" method="post" class="logout">
-            <button type="submit">Sair</button>
+    <div class="container">
+        <div class="topo">
+            <h1>📋 Cadastro de Visitantes</h1>
+            <div>
+                <strong>Usuário:</strong> {{ usuario }} |
+                <a href="/logout">Sair</a>
+            </div>
+        </div>
+
+        {% if sucesso %}
+            <div class="mensagem">{{ sucesso }}</div>
+        {% endif %}
+        {% if erro %}
+            <div class="erro">{{ erro }}</div>
+        {% endif %}
+
+        <form method="POST" action="/cadastrar">
+            <input type="text" name="nome" placeholder="Nome" required>
+            <input type="text" name="cpf" placeholder="CPF (123.456.789-00)">
+            <input type="text" name="identidade" placeholder="Identidade">
+            <input type="text" name="placa" placeholder="Placa do Veículo (ABC-1234 ou ABC-1D34)">
+            <input type="text" name="bloco" placeholder="Bloco">
+            <button type="submit">Cadastrar</button>
         </form>
-    </header>
 
-    {% if mensagem %}
-        <div class="message {{ tipo }}">{{ mensagem }}</div>
-    {% endif %}
+        <form method="POST" action="/buscar">
+            <input type="text" name="termo" placeholder="Buscar por nome, CPF ou identidade" required>
+            <button type="submit">Buscar</button>
+        </form>
 
-    <h2>Cadastro de Visitantes</h2>
-    <form method="POST" action="/cadastrar">
-        <label>Nome:</label>
-        <input type="text" name="nome" required>
-
-        <label>CPF (opcional):</label>
-        <input type="text" name="cpf" pattern="\d{3}\.\d{3}\.\d{3}-\d{2}" placeholder="123.456.789-00">
-
-        <label>Identidade (opcional):</label>
-        <input type="text" name="identidade">
-
-        <label>Placa do Veículo (opcional):</label>
-        <input type="text" name="placa" pattern="^[A-Z]{3}-\d{4}$|^[A-Z]{3}-\d[A-Z]\d{2}$" placeholder="ABC-1234 ou ABC-1D34">
-
-        <label>Bloco:</label>
-        <input type="text" name="bloco" required>
-
-        <button type="submit">Cadastrar</button>
-    </form>
-
-    <h2>Buscar Visitante</h2>
-    <form method="POST" action="/buscar">
-        <input type="text" name="termo" placeholder="Nome, CPF ou Identidade" required>
-        <button type="submit">Buscar</button>
-    </form>
-
-    {% if resultados %}
-        <h2>Resultados da Busca</h2>
+        {% if resultados %}
         <table>
             <tr>
                 <th>Nome</th>
@@ -132,7 +108,7 @@
                 <th>Identidade</th>
                 <th>Placa</th>
                 <th>Bloco</th>
-                <th>Data/Hora</th>
+                <th>Data</th>
             </tr>
             {% for r in resultados %}
             <tr>
@@ -145,6 +121,13 @@
             </tr>
             {% endfor %}
         </table>
-    {% endif %}
+        {% endif %}
+
+        {% if usuario == 'admin' %}
+            <a href="/download">
+                <button style="background-color: #28a745;">⬇️ Baixar banco de dados</button>
+            </a>
+        {% endif %}
+    </div>
 </body>
 </html>
