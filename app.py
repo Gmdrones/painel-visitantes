@@ -29,8 +29,12 @@ def init_db():
 init_db()
 
 # --- Rota de Login ---
-@app.route('/', methods=['GET', 'POST'])
+@app.route("/", methods=["GET", "POST"])
 def login():
+    if request.method == "POST":
+        # lógica do login
+        ...
+    return render_template("login.html")
     msg = ""
     if request.method == 'POST':
         usuario = request.form['usuario']
